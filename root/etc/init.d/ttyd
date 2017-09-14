@@ -10,7 +10,7 @@ EXTRA_HELP="status	Print runtime information"
 ttyd_init="/etc/init.d/ttyd"
 ttyd="/usr/bin/ttyd"
 ttyd_params=""
-ttyd_run=""
+ttyd_run="/bin/sh"
 
 start_service()
 {
