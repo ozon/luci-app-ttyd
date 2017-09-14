@@ -12,20 +12,6 @@ PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
 
 include $(INCLUDE_DIR)/package.mk
 
-define Create/uci-defaults
-	( \
-		echo '#!/bin/sh'; \
-		echo 'uci -q batch <<-EOF >/dev/null'; \
-		echo "	delete ucitrack.@$(1)[-1]"; \
-		echo "	add ucitrack $(1)"; \
-		echo "	set ucitrack.@$(1)[-1].init=$(1)"; \
-		echo '	commit ucitrack'; \
-		echo 'EOF'; \
-		echo 'rm -f /tmp/luci-indexcache'; \
-		echo 'exit 0'; \
-	) > $(PKG_BUILD_DIR)/40_luci-$(1)
-endef
-
 define Package/luci-app-ttyd
 	SECTION:=luci
 	CATEGORY:=LuCI
@@ -45,17 +31,6 @@ endef
 define Build/Compile
 endef
 
-define Package/luci-app-ttyd/postinst
-#!/bin/sh
-if [ -z "$${IPKG_INSTROOT}" ]; then
-	( . /etc/uci-defaults/40_luci-ttyd ) && rm -f /etc/uci-defaults/40_luci-ttyd
-	chmod 755 /etc/init.d/ttyd >/dev/null 2>&1
-	/etc/init.d/ttyd enable >/dev/null 2>&1
-fi
-exit 0
-endef
-
-
 define Package/luci-app-ttyd/postrm
 #!/bin/sh
 rm -f /tmp/luci-indexcache
@@ -64,7 +39,6 @@ endef
 
 
 define Package/luci-app-ttyd/install
-	$(call Create/uci-defaults,ttyd)
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/controller
 	$(INSTALL_DATA) ./luasrc/controller/ttyd.lua $(1)/usr/lib/lua/luci/controller/ttyd.lua
 
@@ -78,10 +52,7 @@ define Package/luci-app-ttyd/install
 	$(INSTALL_DATA) ./root/etc/config/ttyd $(1)/etc/config/ttyd
 
 	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_DATA) ./root/etc/init.d/ttyd $(1)/etc/init.d/ttyd
-
-	$(INSTALL_DIR) $(1)/etc/uci-defaults
-	$(INSTALL_BIN) ./root/etc/uci-defaults/40_luci-ttyd $(1)/etc/uci-defaults/40_luci-ttyd
+	$(INSTALL_BIN) ./root/etc/init.d/ttyd $(1)/etc/init.d/ttyd
 endef
 
 $(eval $(call BuildPackage,luci-app-ttyd))
