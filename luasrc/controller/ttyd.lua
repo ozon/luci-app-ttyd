@@ -32,6 +32,6 @@ end
 
 function action_run()
     local http = require "luci.http"
-    local rv = luci.sys.exec("/etc/init.d/ttyd start")
+    luci.sys.init.start("ttyd")
     http.redirect(luci.dispatcher.build_url('admin/system/ttyd'))
 end
